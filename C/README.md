@@ -1,4 +1,4 @@
-# U6143_ssd1306
+# U6144_ssd1306
 ## Enable i2c 
 ```bash
 sudo raspi-config
