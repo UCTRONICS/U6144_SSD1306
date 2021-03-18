@@ -8,11 +8,11 @@ Enable i2c
 
 ##  Download library 
 ```bash
-git clone https://github.com/UCTRONICS/U6143_ssd1306.git
+git clone https://github.com/UCTRONICS/U6144_SSD1306.git
 ```
 ## Compile the source code 
 ```bash
-cd U6143_ssd1306/C 
+cd U6144_SSD1306/C 
 ```
 ```bash
 make 
@@ -22,7 +22,7 @@ make
 ## Run the display
 
 ```bash 
-cd U6143_ssd1306/C 
+cd U6144_SSD1306/C 
 ```
 ```bash 
 ./display 
