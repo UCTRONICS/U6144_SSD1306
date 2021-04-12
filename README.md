@@ -32,3 +32,16 @@ cd U6144_SSD1306/C
 cd U6144_SSD1306/python
 sudo python3 ssd1306_stats_0.96inch.py
 ```
+## Add automatic start script
+- Open the rc.local file 
+```bash
+sudo nano /etc/rc.local
+```
+- Add command to the rc.local file
+```bash
+cd /home/pi/U6144_SSD1306/C 
+sudo make clean 
+sudo make 
+sudo ./display &
+```
+- reboot your system
