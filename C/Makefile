@@ -6,7 +6,7 @@ SRC			=$(wildcard *.c)
 DIR			=$(notdir $(SRC))
 OBJ 		= $(patsubst %.c, %.o, $(DIR))
 $(Target): $(OBJ)
-	$(CXX) $^ -o $@  $(LIBS)
+	$(CXX) $^ -o $@  $(LIBS) -g -rdynamic
 .PHONY:clean
 clean:
 	rm -rf *.o

@@ -243,14 +243,14 @@ void OLED_Clear(void)
 void LCD_DisplayTemperature(void)
 {
   unsigned char symbol=0;
-  char ip[20];
-  char *test_eth = "wlan0";
+  char ip[30]={0};
   unsigned int temp=0;
   FILE * fp;
-  unsigned char  buffer[80];
+  unsigned char buffer[80]={0};
   temp=Obaintemperature();                  //Gets the temperature of the CPU
   fp=popen("top -bn1 | grep load | awk '{printf \"%.2f\", $(NF-2)}'","r");    //Gets the load on the CPU
-  fgets(buffer, sizeof (buffer),fp);                                    //Read the CPU load
+  fgets(buffer,sizeof(buffer),fp);                                    //Read the CPU load
+  pclose(fp);
   buffer[3]='\0';        
   strcpy(ip,GetIpAddress());   //Get the IP address of the device's wireless network card
   symbol=strcmp(IPSource,ip);
@@ -276,15 +276,12 @@ void LCD_DisplayTemperature(void)
 unsigned char Obaintemperature(void)
 {
     FILE *fd;
-    unsigned int temp;
-    char buff[256];
-
+    unsigned int temp=0;
+    char buff[256]={0};
     fd = fopen("/sys/class/thermal/thermal_zone0/temp","r");
     fgets(buff,sizeof(buff),fd);
     sscanf(buff, "%d", &temp);
-
     fclose(fd);
-
     return temp/1000;
 
 }
@@ -324,10 +321,8 @@ void LCD_DisPlayCpuSdMemory(void)
   }
 
   statfs("/",&diskInfo);
-//  OLED_ClearLint(2,4);      //更改
-//  OLED_DrawPartBMP(0,2,128,4,BMP,2);  //更改
-	unsigned long long blocksize = diskInfo.f_bsize;// The number of bytes per block
-	unsigned long long totalsize = blocksize*diskInfo.f_blocks;//Total number of bytes	
+  unsigned long long blocksize = diskInfo.f_bsize;// The number of bytes per block
+  unsigned long long totalsize = blocksize*diskInfo.f_blocks;//Total number of bytes	
   MemSize=(unsigned int)(totalsize>>30);
   snprintf(totalsize_GB,7,"%d",MemSize);
   if(MemSize>0&&MemSize<10)
@@ -344,7 +339,7 @@ void LCD_DisPlayCpuSdMemory(void)
   }
 
 
-	unsigned long long freesize = blocksize*diskInfo.f_bfree; //Now let's figure out how much space we have left
+  unsigned long long freesize = blocksize*diskInfo.f_bfree; //Now let's figure out how much space we have left
   size=freesize>>30;
   size=MemSize-size;
   snprintf(usedsize_GB,7,"%d",size);
@@ -378,9 +373,6 @@ void LCD_Display(unsigned char symbol)
     case 1:
       LCD_DisPlayCpuSdMemory();
     break;
-//    case 2:
-//      LCD_DisplaySdMemory();
-//    break;
     default:
     break;
   }
