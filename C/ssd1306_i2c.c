@@ -243,7 +243,6 @@ void OLED_Clear(void)
 void LCD_DisplayTemperature(void)
 {
   unsigned char symbol=0;
-  char ip[30]={0};
   unsigned int temp=0;
   FILE * fp;
   unsigned char buffer[80]={0};
@@ -252,19 +251,20 @@ void LCD_DisplayTemperature(void)
   fgets(buffer,sizeof(buffer),fp);                                    //Read the CPU load
   pclose(fp);
   buffer[3]='\0';        
-  strcpy(ip,GetIpAddress());   //Get the IP address of the device's wireless network card
-  symbol=strcmp(IPSource,ip);
-  if(symbol!=0)
-  {
-    strcpy(IPSource,ip);
-  }
+  strcpy(IPSource,GetIpAddress());   //Get the IP address of the device's wireless network card
   OLED_Clear();                                        //Remove the interface
-  OLED_DrawBMP(0,0,128,8,BMP,1);    //更改
-  OLED_ShowString(30,0,IPSource,8);          //Send the IP address to the lower machine
-  if(temp>10)                                                  
+  OLED_DrawBMP(0,0,128,8,BMP,1);    
+  OLED_ShowString(0,0,IPSource,8);          //Send the IP address to the lower machine
+  if(temp>=100)                                                  
+  {
+    OLED_ShowChar(80,3,temp/100+'0',8);                        //According to the temperature
+    OLED_ShowChar(88,3,temp/10%10+'0',8);                        //According to the temperature
+    OLED_ShowChar(96,3,temp%10+'0',8);  
+  }
+  else if(temp<100&&temp>=10)   
   {
     OLED_ShowChar(88,3,temp/10+'0',8);                        //According to the temperature
-    OLED_ShowChar(96,3,temp%10+'0',8);
+    OLED_ShowChar(96,3,temp%10+'0',8);  
   }
   else
   {
@@ -273,7 +273,7 @@ void LCD_DisplayTemperature(void)
   OLED_ShowString(88,7,buffer,8);                        //Display CPU load
 }
 
-unsigned char Obaintemperature(void)
+unsigned int Obaintemperature(void)
 {
     FILE *fd;
     unsigned int temp=0;
@@ -282,7 +282,7 @@ unsigned char Obaintemperature(void)
     fgets(buff,sizeof(buff),fd);
     sscanf(buff, "%d", &temp);
     fclose(fd);
-    return temp/1000;
+    return temp/1000*1.8+32;
 
 }
 
@@ -303,8 +303,8 @@ void LCD_DisPlayCpuSdMemory(void)
   struct statfs diskInfo;
   if(sysinfo(&s_info)==0)            //Get memory information
   {
-    OLED_ClearLint(2,8);            //更改
-    OLED_DrawPartBMP(0,2,128,8,BMP,0);  //更改
+    OLED_ClearLint(2,8);           
+    OLED_DrawPartBMP(0,2,128,8,BMP,0);  
     Totalram=s_info.totalram/1024/1024/1024.0;
     freeram=s_info.freeram/1024/1024/1024.0;
     Total[0]=(unsigned char)Totalram+'0';
@@ -316,8 +316,8 @@ void LCD_DisPlayCpuSdMemory(void)
     free[1]='.';
     free[2]=((unsigned char)(freeram*10))%10+'0';
     free[3]=='\0';
-    OLED_ShowString(50,3,free,8); //更改
-    OLED_ShowString(88,3,Total,8); //更改
+    OLED_ShowString(50,3,free,8); 
+    OLED_ShowString(88,3,Total,8); 
   }
 
   statfs("/",&diskInfo);
@@ -388,18 +388,29 @@ char* GetIpAddress(void)
 {
     int fd;
     struct ifreq ifr;
-
+    int symbol=0;
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     
     /* I want to get an IPv4 IP address */
     ifr.ifr_addr.sa_family = AF_INET;
-    
     /* I want IP address attached to "eth0" */
-    strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ-1);
-    
-    ioctl(fd, SIOCGIFADDR, &ifr);
-    
+    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+    symbol=ioctl(fd, SIOCGIFADDR, &ifr);
     close(fd);
-    return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+    if(symbol==0)
+    {
+      return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+    }
+    else
+    {
+        fd = socket(AF_INET, SOCK_DGRAM, 0);
+        /* I want to get an IPv4 IP address */
+        ifr.ifr_addr.sa_family = AF_INET;
+        /* I want IP address attached to "eth0" */
+        strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ-1);
+        ioctl(fd, SIOCGIFADDR, &ifr);
+        close(fd);    
+        return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);    
+    }
     /* display result */
 }

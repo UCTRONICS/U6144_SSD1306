@@ -33,5 +33,5 @@ void LCD_Display(unsigned char symbol);
 void LCD_DisPlayCpuSdMemory(void);
 void FirstGetIpAddress(void);
 char* GetIpAddress(void);
-unsigned char Obaintemperature(void);
+unsigned int Obaintemperature(void);
 #endif				/* _SSD1306_I2C_H_ */
