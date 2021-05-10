@@ -5,6 +5,8 @@ This library just support 128X32 lcd with i2c interface;
 #ifndef SSD1306_I2C_H_
 #define SSD1306_I2C_H_
 
+extern int i2cd;
+
 #define BLACK 0
 #define WHITE 1
 #define INVERSE 2
@@ -16,7 +18,7 @@ This library just support 128X32 lcd with i2c interface;
 
 #define SSD1306_LCDWIDTH                  128
 #define SSD1306_LCDHEIGHT                 64
-void ssd1306_begin(unsigned int switchvcc, unsigned int i2caddr); //switchvcc should be SSD1306_SWITCHCAPVCC
+void ssd1306_begin(unsigned int switchvcc, unsigned char i2caddr); //switchvcc should be SSD1306_SWITCHCAPVCC
 void OLED_ShowString(unsigned char x,unsigned char y, unsigned char *p,unsigned char Char_Size);
 void OLED_ShowChar(unsigned char x,unsigned char y,unsigned char chr,unsigned char Char_Size);
 void OLED_Set_Pos(unsigned char x, unsigned char y);
