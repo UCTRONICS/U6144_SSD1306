@@ -28,6 +28,12 @@ cd U6144_SSD1306/C
 
 ## python code
 
+## Install library files
+```bash
+sudo pip3 install rpi_ws281x adafruit-circuitpython-neopixel
+sudo pip3 install adafruit-circuitpython-ssd1306
+```
+## Run
 ```bash
 cd U6144_SSD1306/python
 sudo python3 ssd1306_stats_0.96inch.py
