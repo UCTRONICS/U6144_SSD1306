@@ -1,1 +1,0 @@
-C:\Users\arducam\Desktop\OLED_Demo\OLED_Demo\OLED_Demo\OLED_Demo.csproj;arm
