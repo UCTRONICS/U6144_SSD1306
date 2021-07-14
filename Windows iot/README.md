@@ -5,7 +5,7 @@ the development software is Visual studio 2017, and the programming language is 
 
 # Download driver
 ```bash
-https://github.com/UCTRONICS/U6144_SSD1306
+git clone https://github.com/UCTRONICS/U6144_SSD1306
 ```
 
 # windows 10 iot system installation download
