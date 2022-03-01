@@ -189,7 +189,7 @@ void Write_IIC_Command(unsigned char IIC_Command)
 }
 
 
-/***********Display the BMP image  128X32  Starting point coordinates(x,y),The range of x 0~127   The range of y 0~4*****************/
+/***********Display the BMP image  128X64  Starting point coordinates(x,y),The range of x 0~127   The range of y 0~4*****************/
 void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1,unsigned char BMP[][1024],unsigned char symbol)
 { 	
  unsigned int j=0;
@@ -266,10 +266,18 @@ void LCD_DisplayTemperature(void)
   fgets(buffer,sizeof(buffer),fp);                                    //Read the CPU load
   pclose(fp);
   buffer[3]='\0';        
-  strcpy(IPSource,GetIpAddress());   //Get the IP address of the device's wireless network card
+  
   OLED_Clear();                                        //Remove the interface
-  OLED_DrawBMP(0,0,128,8,BMP,1);    
-  OLED_ShowString(0,0,IPSource,8);          //Send the IP address to the lower machine
+  OLED_DrawBMP(0,0,128,8,BMP,TEMPERATURE_TYPE);    
+  if (IP_SWITCH == IP_DISPLAY_OPEN)
+  {
+    strcpy(IPSource,GetIpAddress());   //Get the IP address of the device's wireless network card
+    OLED_ShowString(0,0,IPSource,8);          //Send the IP address to the lower machine
+  }
+  else
+  {
+    OLED_ShowString(0,0,CUSTOM_DISPLAY,8);          //Send the IP address to the lower machine
+  }
   if(temp>=100)                                                  
   {
     OLED_ShowChar(80,3,temp/100+'0',8);                        //According to the temperature
@@ -297,7 +305,7 @@ unsigned int Obaintemperature(void)
     fgets(buff,sizeof(buff),fd);
     sscanf(buff, "%d", &temp);
     fclose(fd);
-    return temp/1000*1.8+32;
+    return TEMPERATURE_TYPE == FAHRENHEIT ? temp/1000*1.8+32 : temp/1000;
 
 }
 
@@ -320,7 +328,7 @@ void LCD_DisPlayCpuSdMemory(void)
   unsigned int value=0;
   struct statfs diskInfo;
   OLED_ClearLint(2,8);
-  OLED_DrawPartBMP(0,2,128,8,BMP,0);
+  OLED_DrawPartBMP(0,2,128,8,BMP,2);
   FILE* fp=fopen("/proc/meminfo","r");
   if(fp==NULL)
   {
@@ -423,19 +431,26 @@ char* GetIpAddress(void)
     int fd;
     struct ifreq ifr;
     int symbol=0;
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    
-    /* I want to get an IPv4 IP address */
-    ifr.ifr_addr.sa_family = AF_INET;
-    /* I want IP address attached to "eth0" */
-    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
-    symbol=ioctl(fd, SIOCGIFADDR, &ifr);
-    close(fd);
-    if(symbol==0)
+    if (IPADDRESS_TYPE == ETH0_ADDRESS)
     {
-      return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+      fd = socket(AF_INET, SOCK_DGRAM, 0);
+      /* I want to get an IPv4 IP address */
+      ifr.ifr_addr.sa_family = AF_INET;
+      /* I want IP address attached to "eth0" */
+      strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+      symbol=ioctl(fd, SIOCGIFADDR, &ifr);
+      close(fd);
+      if(symbol==0)
+      {
+        return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+      }
+      else
+      {
+        char* buffer="0.0.0.0";
+        return buffer;
+      }
     }
-    else
+    else if (IPADDRESS_TYPE == WLAN0_ADDRESS)
     {
         fd = socket(AF_INET, SOCK_DGRAM, 0);
         /* I want to get an IPv4 IP address */
@@ -444,16 +459,19 @@ char* GetIpAddress(void)
         strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ-1);
         symbol=ioctl(fd, SIOCGIFADDR, &ifr);
         close(fd);    
-	if(symbol==0)
-	{
-	  return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);   
-	}
-	else
-	{
-	  char* buffer="0.0.0.0";
-	  return buffer;
-	}
-         
+        if(symbol==0)
+        {
+          return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);   
+        }
+        else
+        {
+          char* buffer="0.0.0.0";
+          return buffer;
+        }
     }
-    /* display result */
+    else
+    {
+      char* buffer="0.0.0.0";
+      return buffer;
+    }
 }
